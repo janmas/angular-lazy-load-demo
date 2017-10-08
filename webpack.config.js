@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 const typescript = require('typescript');
 const { AotPlugin } = require('@ngtools/webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const rules = [
   { test: /\.html$/, loader: 'html-loader' },
@@ -21,7 +22,19 @@ const plugins = [
   })
 ];
 
+const output = {
+  filename: '[name].js',
+  chunkFilename: '[name]-chunk.js',
+  publicPath: '/build/',
+  path: path.resolve(__dirname, 'dist')
+};
+
 if (process.env.NODE_ENV === 'production') {
+  // known issue (https://github.com/webpack/webpack/issues/1315): 
+  // vendor's chunkhash is changed whenever app chunk content is changed.
+  output.filename = '[name].[chunkhash].js';
+  output.chunkFilename = '[name]-chunk.[chunkhash].js';
+  output.publicPath = '';
   rules.push({
     test: /\.ts$/, loaders: ['@ngtools/webpack']
   });
@@ -53,7 +66,11 @@ if (process.env.NODE_ENV === 'production') {
         warnings: false
       },
       comments: false
-    })
+    }),
+    new HtmlWebpackPlugin({
+      template: 'index-production.html',
+      filename: 'index.html'
+    })    
   );
 } else {
   rules.push({
@@ -92,12 +109,7 @@ module.exports = {
   entry: {
     app: ['zone.js/dist/zone', './src/main.ts']
   },
-  output: {
-    filename: '[name].js',
-    chunkFilename: '[name]-chunk.js',
-    publicPath: '/build/',
-    path: path.resolve(__dirname, 'build')
-  },
+  output,
   node: {
     console: false,
     global: true,

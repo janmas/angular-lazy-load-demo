@@ -27,7 +27,7 @@ npm-debug.log
 # Build
 build
 vendor/*-manifest.json
-aot-output
+dist
 
 # Docs
 gh-pages
